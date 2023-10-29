@@ -1,14 +1,25 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.Networking;
 using System;
 
 public class DownloadImage : GenericSingleton<DownloadImage>
 {
-    public void DownloadTheImage(string url, Action<Texture2D> onDownloadSuccessfull, Action<String> onDownloadFailed)
+    [SerializeField]
+    int maxAllowedImagesToDownload = 3;
+
+    int downloadingImages = 0;
+    public bool DownloadTheImage(string url, Action<Texture2D> onDownloadSuccessfull, Action<String> onDownloadFailed)
     {
-        StartCoroutine(DownloadImageCoroutine(url, onDownloadSuccessfull, onDownloadFailed));
+        if (downloadingImages < maxAllowedImagesToDownload)
+        {
+            StartCoroutine(DownloadImageCoroutine(url, onDownloadSuccessfull, onDownloadFailed));
+            downloadingImages++;
+            return true;
+        }
+
+        return false;
     }
     
     private IEnumerator DownloadImageCoroutine(string url, Action<Texture2D> onSuccessFull, Action<String> onImageDownloadFailed)
@@ -28,5 +39,6 @@ public class DownloadImage : GenericSingleton<DownloadImage>
         {
             onImageDownloadFailed?.Invoke(downloadImageRequest.error);
         }
+        downloadingImages--;
     }
 }

@@ -16,20 +16,36 @@ public class WebImage : MonoBehaviour
     TextMeshProUGUI downloadButtonText;
     [SerializeField]
     string imageName;
+    [SerializeField]
+    bool shouldCacheImage = true;
 
     private void Start()
     {
-        downloadImageButton.onClick.AddListener(OnDownloadImageButtonPressed);
+        downloadImageButton.interactable = false;
+        ImageSaver.Instance.ReadTextureFile(imageName, OnImageReaded, OnImageReadFailed);
     }
 
     public void OnDownloadImageButtonPressed()
     {
-        downloadImageButton.interactable = false;
-        downloadButtonText.text = "Downloading";
-        DownloadImage.Instance.DownloadTheImage(imageURL, OnImageDownloaded, OnImageDownloadFailed);
+        if (DownloadImage.Instance.DownloadTheImage(imageURL, OnImageDownloaded, OnImageDownloadFailed))
+        {
+            downloadImageButton.interactable = false;
+            downloadButtonText.text = "Downloading";
+        }
+        
     }
 
     public void OnImageDownloaded(Texture2D downloadedTexture)
+    {
+        if(shouldCacheImage)
+        {
+            //save the image
+            ImageSaver.Instance.SaveTextureFile(downloadedTexture, imageName);
+        }
+        ShowImage(downloadedTexture);
+    }
+
+    private void ShowImage(Texture2D downloadedTexture)
     {
         downloadImageButton.interactable = false;
         downloadButtonText.text = "Downloaded";
@@ -43,5 +59,16 @@ public class WebImage : MonoBehaviour
         downloadButtonText.text = "Re Try";
         downloadImageButton.interactable = true;
         Debug.Log(message);
+    }
+
+    public void OnImageReaded(Texture2D readedTexture)
+    {
+        ShowImage(readedTexture);
+    }
+
+    public void OnImageReadFailed()
+    {
+        downloadImageButton.onClick.AddListener(OnDownloadImageButtonPressed);
+        downloadImageButton.interactable = true;
     }
 }
