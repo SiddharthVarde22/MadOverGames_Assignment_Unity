@@ -8,14 +8,17 @@ public class DownloadImage : GenericSingleton<DownloadImage>
 {
     [SerializeField]
     int maxAllowedImagesToDownload = 3;
+    [SerializeField]
+    float timeToWaitToDownload = 10;
 
-    int downloadingImages = 0;
+    int numberOfDownloadingImages = 0;
+
     public bool DownloadTheImage(string url, Action<Texture2D> onDownloadSuccessfull, Action<String> onDownloadFailed)
     {
-        if (downloadingImages < maxAllowedImagesToDownload)
+        if (numberOfDownloadingImages < maxAllowedImagesToDownload)
         {
             StartCoroutine(DownloadImageCoroutine(url, onDownloadSuccessfull, onDownloadFailed));
-            downloadingImages++;
+            numberOfDownloadingImages++;
             return true;
         }
 
@@ -39,6 +42,6 @@ public class DownloadImage : GenericSingleton<DownloadImage>
         {
             onImageDownloadFailed?.Invoke(downloadImageRequest.error);
         }
-        downloadingImages--;
+        numberOfDownloadingImages--;
     }
 }
